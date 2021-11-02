@@ -32,6 +32,10 @@ SELECT loan_id
 FROM loan
 ORDER BY payments DESC
 LIMIT 1;
+-- OR
+SELECT loan_id
+FROM loan
+WHERE payments = (SELECT MAX(payments) FROM loan);
 
 -- Query 6
 -- What is the loan amount of the lowest 5 account_ids in the loan table?
@@ -53,7 +57,8 @@ LIMIT 5;
 -- What are the unique values of k_symbol in the order table?
 -- -- Note: There shouldn't be a table name order, since order is reserved from the ORDER BY clause. You have to use backticks to escape the order table name.
 SELECT DISTINCT k_symbol
-FROM `order`;
+FROM `order`
+WHERE k_symbol <> "";
 
 -- Query 9
 -- In the order table, what are the order_ids of the client with the account_id 34?
@@ -71,11 +76,11 @@ WHERE order_id BETWEEN 29540 AND 29560;
 -- In the order table, what are the individual amounts that were sent to (account_to) id 30067122?
 SELECT SUM(amount)
 FROM `order`
-WHERE account_to = 30067122;
+WHERE account_to = CAST('30067122' AS unsigned);
 
 -- Query 12
 -- In the trans table, show the trans_id, date, type and amount of the 10 first transactions from account_id 793 in chronological order, from newest to oldest.
-SELECT trans_id, date, type, amount
+SELECT trans_id, `date`, `type`, amount
 FROM trans
 WHERE account_id = 793
 ORDER BY date DESC
@@ -84,16 +89,16 @@ LIMIT 10;
 -- Query 13
 -- In the client table, of all districts with a district_id lower than 10, how many clients are from each district_id? Show the results sorted by the district_id in ascending order.
 SELECT district_id, COUNT(*)  AS num_client
-FROM client
+FROM `client`
 WHERE district_id < 10
 GROUP BY district_id
 ORDER BY district_id;
 
 -- Query 14
 -- In the card table, how many cards exist for each type? Rank the result starting with the most frequent type.
-SELECT type, COUNT(*) AS num_cards
+SELECT `type`, COUNT(*) AS num_cards
 FROM card
-GROUP BY type
+GROUP BY `type`
 ORDER BY num_cards DESC;
 
 -- OPTIONAL
@@ -107,38 +112,48 @@ LIMIT 10;
 
 -- Query 16
 -- In the loan table, retrieve the number of loans issued for each day, before (excl) 930907, ordered by date in descending order.
-SELECT date, COUNT(*) num_loans
+SELECT `date`, COUNT(*) num_loans
 FROM loan
 WHERE date < 930907
-GROUP BY date
-ORDER BY date DESC;
+GROUP BY `date`
+ORDER BY `date` DESC;
 
 -- Query 17
 -- In the loan table, for each day in December 1997, count the number of loans issued for each unique loan duration,
 -- ordered by date and duration, both in ascending order. You can ignore days without any loans in your output.
-SELECT date, duration, COUNT(*) AS num_loans
+SELECT `date`, duration, COUNT(*) AS num_loans
 FROM loan
-WHERE date like "9712%"
-GROUP BY date, duration
-ORDER BY date, duration;
+WHERE `date` like "9712%"
+GROUP BY `date`, duration
+ORDER BY `date`, duration;
 
 -- Query 18
 -- In the trans table, for account_id 396, sum the amount of transactions for each type (VYDAJ = Outgoing, PRIJEM = Incoming).
 -- Your output should have the account_id, the type and the sum of amount, named as total_amount. Sort alphabetically by type.
-SELECT account_id, type, SUM(amount) AS total_amount
+SELECT account_id, `type`, SUM(amount) AS total_amount
 FROM trans
 WHERE account_id = 396
-GROUP BY type;
+GROUP BY `type`;
 
 -- Query 19
 -- From the previous output, translate the values for type to English, rename the column to transaction_type,
 -- round total_amount down to an integer
 SELECT account_id,
-	   REPLACE(REPLACE(type, 'PRIJEM', 'INCOMING'), 'VYDAJ', 'OUTGOING') AS transaction_type,
+	   REPLACE(REPLACE(`type`, 'PRIJEM', 'INCOMING'), 'VYDAJ', 'OUTGOING') AS transaction_type,
        FLOOR(SUM(amount)) AS total_amount
 FROM trans
 WHERE account_id = 396
-GROUP BY type;
+GROUP BY `type`;
+-- OR
+SELECT account_id,
+	   (CASE
+         WHEN `type` = 'PRIJEM' THEN 'INCOMING'
+         ELSE 'OUTGOING'
+	   END) AS transaction_type,
+       FLOOR(SUM(amount)) AS total_amount
+FROM trans
+WHERE account_id = 396
+GROUP BY `type`;
 
 -- Query 20
 -- From the previous result, modify your query so that it returns only one row, with a column for
@@ -148,13 +163,13 @@ incoming_396 AS (
 	SELECT FLOOR(SUM(amount)) AS incoming
 	FROM trans
 	WHERE account_id = 396
-	  AND type = 'PRIJEM'),
+	  AND `type` = 'PRIJEM'),
 
 outgoing_396 AS (
 	SELECT FLOOR(SUM(amount)) outgoing
 	FROM trans
 	WHERE account_id = 396
-	  AND type = 'VYDAJ')
+	  AND `type` = 'VYDAJ')
 
 SELECT account_id, 
 	   incoming_396.incoming AS incoming,
@@ -168,22 +183,25 @@ GROUP BY account_id;
 -- Continuing with the previous example, rank the top 10 account_ids based on their difference.
 WITH
 incoming AS (
-	SELECT account_id, FLOOR(SUM(amount)) AS incoming
+	SELECT account_id,
+		   FLOOR(SUM(amount)) AS incoming
 	FROM trans
-	WHERE type = 'PRIJEM'
+	WHERE `type` = 'PRIJEM'
     GROUP BY account_id
     ORDER BY account_id),
 
 outgoing AS (
-	SELECT account_id, FLOOR(SUM(amount)) AS outgoing
+	SELECT account_id,
+		   FLOOR(SUM(amount)) AS outgoing
 	FROM trans
-	WHERE type = 'VYDAJ'
+	WHERE `type` = 'VYDAJ'
     GROUP BY account_id
     ORDER BY account_id)
 
-SELECT incoming.account_id, incoming - outgoing AS balance
+SELECT incoming.account_id,
+	   incoming - outgoing AS balance
 FROM incoming
-JOIN outgoing ON incoming.account_id = outgoing.account_id
+JOIN outgoing
+  ON incoming.account_id = outgoing.account_id
 ORDER BY balance DESC
 LIMIT 10;
-	   
