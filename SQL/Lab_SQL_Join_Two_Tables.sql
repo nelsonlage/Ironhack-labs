@@ -1,6 +1,6 @@
 -- 1. Which actor has appeared in the most films?
 SELECT
-CONCAT(actor.first_name, ' ', actor.last_name) AS actor, 
+	CONCAT(actor.first_name, ' ', actor.last_name) AS actor, 
     COUNT(*) AS num_movies
 FROM film_actor
 JOIN actor
