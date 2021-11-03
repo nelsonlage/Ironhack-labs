@@ -60,7 +60,7 @@ GROUP BY film.film_id
 ORDER BY num_actors DESC
 LIMIT 10;
 
--- Using the tables payment and customer and the JOIN command, list the total paid by each customer. List the customers alphabetically by last name. 
+-- 7. Using the tables payment and customer and the JOIN command, list the total paid by each customer. List the customers alphabetically by last name. 
 SELECT
 	customer.first_name,
     customer.last_name,
@@ -75,7 +75,6 @@ LIMIT 10;
 -- Bonus: Which is the most rented film?
 SELECT
 	film.title AS film
-    -- COUNT(*) AS times_rented
 FROM film
 JOIN inventory
   ON film.film_id = inventory.film_id
