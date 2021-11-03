@@ -147,7 +147,7 @@ SELECT
   account_id,
   (CASE
     WHEN `type` = 'PRIJEM' THEN 'INCOMING'
-	ELSE 'OUTGOING'
+    ELSE 'OUTGOING'
   END) AS transaction_type,
   FLOOR(SUM(amount)) AS total_amount
 FROM trans
@@ -155,9 +155,10 @@ WHERE account_id = 396
 GROUP BY `type`;
 
 -- Alternatively
--- SELECT account_id,
--- 	   REPLACE(REPLACE(`type`, 'PRIJEM', 'INCOMING'), 'VYDAJ', 'OUTGOING') AS transaction_type,
---        FLOOR(SUM(amount)) AS total_amount
+-- SELECT
+--   account_id,
+--   REPLACE(REPLACE(`type`, 'PRIJEM', 'INCOMING'), 'VYDAJ', 'OUTGOING') AS transaction_type,
+--   FLOOR(SUM(amount)) AS total_amount
 -- FROM trans
 -- WHERE account_id = 396
 -- GROUP BY `type`;
@@ -192,7 +193,7 @@ WITH
 incoming AS (
   SELECT
     account_id,
-	FLOOR(SUM(amount)) AS incoming
+    FLOOR(SUM(amount)) AS incoming
   FROM trans
   WHERE `type` = 'PRIJEM'
   GROUP BY account_id
@@ -201,7 +202,7 @@ incoming AS (
 outgoing AS (
   SELECT
     account_id,
-	FLOOR(SUM(amount)) AS outgoing
+    FLOOR(SUM(amount)) AS outgoing
 FROM trans
 WHERE `type` = 'VYDAJ'
 GROUP BY account_id

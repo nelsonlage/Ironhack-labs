@@ -9,9 +9,9 @@ WHERE film_id  = (
 GROUP BY film_id;
 
 -- -- Without subqueries
--- SELECT 
--- 	film.title,
---  COUNT(*) AS num_copies
+-- SELECT
+--   film.title,
+--   COUNT(*) AS num_copies
 -- FROM film
 -- JOIN inventory USING (film_id)
 -- WHERE film.title = 'Hunchback Impossible'
@@ -32,13 +32,13 @@ WHERE actor_id IN (
   FROM film_actor
   WHERE film_id = (
     SELECT film_id
-	FROM film
-	WHERE title = 'Alone Trip')
+    FROM film
+    WHERE title = 'Alone Trip')
   );
     
 -- -- Without subqueries
 -- SELECT
--- 	CONCAT(first_name, ' ', last_name) AS actor   
+--   CONCAT(first_name, ' ', last_name) AS actor   
 -- FROM actor
 -- JOIN film_actor USING (actor_id)
 -- JOIN film USING (film_id)
@@ -53,17 +53,15 @@ WHERE film_id IN (
   FROM film_category
   WHERE category_id = (
     SELECT category_id
-	FROM category
-	WHERE `name` = 'Family')
+    FROM category
+    WHERE `name` = 'Family')
   );
 
 -- -- Without subqueries
 -- SELECT title
 -- FROM film
--- JOIN film_category
---   ON film.film_id = film_category.film_id
--- JOIN category
---   ON film_category.category_id = category.category_id
+-- JOIN film_category USING (film_id)
+-- JOIN category USING (category_id)
 -- WHERE `name` = 'Family';
 
 -- 5. Get name and email from customers from Canada using subqueries. Do the same with joins. Note that to create a join,
@@ -77,11 +75,11 @@ WHERE address_id IN (
   WHERE city_id IN (
     SELECT city_id
     FROM city
-	WHERE country_id = (
-	  SELECT country_id
-	  FROM country
-	  WHERE country = 'Canada')
-	)
+    WHERE country_id = (
+      SELECT country_id
+      FROM country
+      WHERE country = 'Canada')
+    )
   );
 
 -- -- Using joins
@@ -103,8 +101,8 @@ WHERE film_id IN (
     SELECT actor_id
     FROM film_actor
     GROUP BY actor_id
-	ORDER BY COUNT(*) DESC
-	LIMIT 1)
+    ORDER BY COUNT(*) DESC
+    LIMIT 1)
   );
 
 -- -- Alternatively
@@ -112,11 +110,11 @@ WHERE film_id IN (
 -- FROM film
 -- JOIN film_actor USING (film_id)
 -- WHERE actor_id = (
--- 	SELECT actor_id
--- 	FROM film_actor
--- 	GROUP BY actor_id
--- 	ORDER BY COUNT(*) DESC
--- 	LIMIT 1);
+--   SELECT actor_id
+-- 	 FROM film_actor
+-- 	 GROUP BY actor_id
+-- 	 ORDER BY COUNT(*) DESC
+-- 	 LIMIT 1);
 		
 -- 7. Films rented by most profitable customer. You can use the customer table and payment table to find the most profitable customer
 -- ie the customer that has made the largest sum of payments
@@ -127,14 +125,14 @@ WHERE film_id IN (
   FROM inventory
   WHERE inventory_id IN (
     SELECT inventory_id
-	FROM rental
-	WHERE customer_id = (
-	  SELECT customer_id
-	  FROM payment
-	  GROUP BY customer_id
-	  ORDER BY SUM(amount) DESC
-	  LIMIT 1)
-	  )
+    FROM rental
+    WHERE customer_id = (
+      SELECT customer_id
+      FROM payment
+      GROUP BY customer_id
+      ORDER BY SUM(amount) DESC
+      LIMIT 1)
+    )
   );
 
 -- ALternatively
@@ -152,8 +150,8 @@ WHERE film_id IN (
 -- 8. Customers who spent more than the average payments
 WITH customer_spent AS (
   SELECT 
-	CONCAT(first_name, ' ', last_name) AS customer,
-	SUM(amount) AS total_spent
+    CONCAT(first_name, ' ', last_name) AS customer,
+    SUM(amount) AS total_spent
   FROM payment
   JOIN customer USING (customer_id)
   GROUP BY payment.customer_id)
